@@ -16,4 +16,10 @@
     <ProjectReference Include="..\FreeCellAI\FreeCellAI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="game0.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
