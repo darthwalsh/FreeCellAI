@@ -5,13 +5,13 @@ using System.Linq;
 namespace FreeCellAI
 {
   struct Card : IEquatable<Card> {
-    static readonly Dictionary<char, int> ranks;
-    static readonly Dictionary<int, char> fromRank;
+    static readonly Dictionary<char, byte> ranks;
+    static readonly Dictionary<byte, char> fromRank;
     static readonly Dictionary<char, Suite> suites;
     static readonly Dictionary<Suite, char> fromSuite;
 
     static Card() {
-      ranks = new Dictionary<char, int> {
+      ranks = new Dictionary<char, byte> {
         ['A'] = 1,
         ['0'] = 10,
         ['J'] = 11,
@@ -19,7 +19,7 @@ namespace FreeCellAI
         ['K'] = 13,
       };
       for (var i = 2; i <= 9; ++i) {
-        ranks.Add((char)('0' + i), i);
+        ranks.Add((char)('0' + i), (byte)i);
       }
       suites = Enum.GetValues(typeof(Suite)).Cast<Suite>().ToDictionary(s => Enum.GetName(typeof(Suite), s)[0]);
 
@@ -27,7 +27,7 @@ namespace FreeCellAI
       fromSuite = suites.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
     }
 
-    public int Rank { get; private set; }
+    public byte Rank { get; private set; }
     public Suite Suite { get; private set; }
     public Card(string card) {
       if (card.Length != 2) {
@@ -49,7 +49,7 @@ namespace FreeCellAI
     public override string ToString() => $"{fromRank[Rank]}{fromSuite[Suite]}";
   }
 
-  enum Suite
+  enum Suite : byte
   {
     Clubs,
     Diamonds,
