@@ -7,8 +7,8 @@ namespace FreeCellAI
   struct Card : IEquatable<Card> {
     static readonly Dictionary<char, byte> ranks;
     static readonly Dictionary<byte, char> fromRank;
-    static readonly Dictionary<char, Suite> suites;
-    static readonly Dictionary<Suite, char> fromSuite;
+    static readonly Dictionary<char, Suit> suits;
+    static readonly Dictionary<Suit, char> fromSuit;
 
     static Card() {
       ranks = new Dictionary<char, byte> {
@@ -21,14 +21,14 @@ namespace FreeCellAI
       for (var i = 2; i <= 9; ++i) {
         ranks.Add((char)('0' + i), (byte)i);
       }
-      suites = Enum.GetValues(typeof(Suite)).Cast<Suite>().ToDictionary(s => Enum.GetName(typeof(Suite), s)[0]);
+      suits = Enum.GetValues(typeof(Suit)).Cast<Suit>().ToDictionary(s => Enum.GetName(typeof(Suit), s)[0]);
 
       fromRank = ranks.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-      fromSuite = suites.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+      fromSuit = suits.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
     }
 
     public byte Rank { get; private set; }
-    public Suite Suite { get; private set; }
+    public Suit Suit { get; private set; }
     public Card(string card) {
       if (card.Length != 2) {
         throw new ArgumentException($"{nameof(card)} should be two chars");
@@ -37,24 +37,24 @@ namespace FreeCellAI
         throw new ArgumentOutOfRangeException($"{card[0]} is not a rank");
       }
       Rank = r;
-      if (!suites.TryGetValue(card[1], out var s)) {
-        throw new ArgumentOutOfRangeException($"{card[1]} is not a suite");
+      if (!suits.TryGetValue(card[1], out var s)) {
+        throw new ArgumentOutOfRangeException($"{card[1]} is not a suit");
       }
-      Suite = s;
+      Suit = s;
     }
 
-    public bool IsRed() => Suite == Suite.Diamonds || Suite == Suite.Hearts;
+    public bool IsRed() => Suit == Suit.Diamonds || Suit == Suit.Hearts;
 
     public bool CanMoveOnto(Card? other) => other == null ||
       ((IsRed() != other.Value.IsRed()) && Rank + 1 == other.Value.Rank);
 
     public override bool Equals(object obj) => obj is Card && Equals((Card)obj);
-    public bool Equals(Card other) => Rank == other.Rank && Suite == other.Suite;
-    public override int GetHashCode() => HashCode.Combine(Rank, Suite);
-    public override string ToString() => $"{fromRank[Rank]}{fromSuite[Suite]}";
+    public bool Equals(Card other) => Rank == other.Rank && Suit == other.Suit;
+    public override int GetHashCode() => HashCode.Combine(Rank, Suit);
+    public override string ToString() => $"{fromRank[Rank]}{fromSuit[Suit]}";
   }
 
-  enum Suite : byte
+  enum Suit : byte
   {
     Clubs,
     Diamonds,

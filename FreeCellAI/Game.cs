@@ -6,15 +6,15 @@ namespace FreeCellAI
 {
   class Game  : ICloneable {
     readonly List<List<Card>> tableau;
-    readonly Dictionary<Suite, int> foundations;
+    readonly Dictionary<Suit, int> foundations;
     readonly List<Card?> freeCells;
 
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
       tableau,
-      Enum.GetValues(typeof(Suite)).Cast<Suite>().ToDictionary(s => s, s => 0),
+      Enum.GetValues(typeof(Suit)).Cast<Suit>().ToDictionary(s => s, s => 0),
       Enumerable.Repeat<Card?>(null, 4).ToList()) { }
 
-    Game(IEnumerable<IEnumerable<Card>> tableau, Dictionary<Suite, int> foundations, List<Card?> freeCells) {
+    Game(IEnumerable<IEnumerable<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells) {
       var allCards = tableau.SelectMany(col => col);
       if (allCards.Count() != 52) {
         throw new ArgumentException($"{allCards.Count()} cards");
