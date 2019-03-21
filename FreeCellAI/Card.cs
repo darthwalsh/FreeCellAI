@@ -43,6 +43,11 @@ namespace FreeCellAI
       Suite = s;
     }
 
+    public bool IsRed() => Suite == Suite.Diamonds || Suite == Suite.Hearts;
+
+    public bool CanMoveOnto(Card? other) => other == null ||
+      ((IsRed() != other.Value.IsRed()) && Rank + 1 == other.Value.Rank);
+
     public override bool Equals(object obj) => obj is Card && Equals((Card)obj);
     public bool Equals(Card other) => Rank == other.Rank && Suite == other.Suite;
     public override int GetHashCode() => HashCode.Combine(Rank, Suite);

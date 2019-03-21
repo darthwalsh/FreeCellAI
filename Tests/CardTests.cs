@@ -20,5 +20,13 @@ namespace Tests
       var g = Importer.FromFile(path);
       Assert.AreEqual(g.Clone().ToString(), g.ToString());
     }
+
+    [TestMethod]
+    public void CanMoveTests() {
+      Assert.IsTrue(new Card("AH").CanMoveOnto(null));
+      Assert.IsTrue(new Card("AH").CanMoveOnto(new Card("2C")));
+      Assert.IsFalse(new Card("AH").CanMoveOnto(new Card("2D")));
+      Assert.IsFalse(new Card("3H").CanMoveOnto(new Card("2C")));
+    }
   }
 }
