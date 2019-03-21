@@ -9,12 +9,16 @@ namespace FreeCellAI
   {
     const int colCount = 8;
 
-    public static Game FromFile(string path) {
+    public static Game FromString(string game) => FromLines(game.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+
+    public static Game FromFile(string path) => FromLines(File.ReadLines(path));
+
+    static Game FromLines(IEnumerable<string> lines) {
       var cols = new List<List<Card>>();
       for (var i = 0; i < colCount; ++i) {
         cols.Add(new List<Card>());
       }
-      foreach (var line in File.ReadLines(path)) {
+      foreach (var line in lines) {
         if (line.Length != 3 * colCount - 1) {
           throw new ArgumentException($"lines was {line.Length}");
         }

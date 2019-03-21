@@ -43,15 +43,20 @@ namespace FreeCellAI
       Suit = s;
     }
 
+    public Card(int rank, Suit suit) {
+      Rank = (byte)rank;
+      Suit = suit;
+    }
+
     public bool IsRed() => Suit == Suit.Diamonds || Suit == Suit.Hearts;
 
-    public bool CanMoveOnto(Card? other) => other == null ||
-      ((IsRed() != other.Value.IsRed()) && Rank + 1 == other.Value.Rank);
+    public bool CanMoveOnto(Card other) => (IsRed() != other.IsRed()) && Rank + 1 == other.Rank;
 
     public override bool Equals(object obj) => obj is Card && Equals((Card)obj);
     public bool Equals(Card other) => Rank == other.Rank && Suit == other.Suit;
     public override int GetHashCode() => HashCode.Combine(Rank, Suit);
-    public override string ToString() => $"{fromRank[Rank]}{fromSuit[Suit]}";
+    public override string ToString() => Rank == 0 ? throw new InvalidOperationException("Card is unitialized!") : 
+      $"{fromRank[Rank]}{fromSuit[Suit]}";
   }
 
   enum Suit : byte
