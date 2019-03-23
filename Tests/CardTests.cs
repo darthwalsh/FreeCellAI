@@ -144,7 +144,7 @@ JD 7D 0C 7C KD 4H 5D QC
       var g = Importer.FromString(text);
       var moves = g.GetPossibleMoves().ToList();
       CollectionAssert.AreEquivalent(Enumerable.Range(0, 8).Select(c => new Game.Move(
-        new Game.Position(Game.Kind.Tableau, (byte)c),
+        new Game.Position(Game.Kind.Tableau, (sbyte)c),
         new Game.Position(Game.Kind.FreeCell, 0)))
         .Concat(new[] {
           // AC
@@ -162,6 +162,12 @@ JD 7D 0C 7C KD 4H 5D QC
         }).ToList(), moves);
     }
 
-      static void Move(ref Game game, Game.Move move) => Assert.IsTrue(game.TryMove(move, out game));
+    [TestMethod]
+    public void SortTest() {
+      var cards = new[] { new Card("5C"), new Card("5H"), new Card("6C") };
+      CollectionAssert.AreEqual(cards, cards.OrderBy(c => c).ToList());
+    }
+
+    static void Move(ref Game game, Game.Move move) => Assert.IsTrue(game.TryMove(move, out game));
   }
 }

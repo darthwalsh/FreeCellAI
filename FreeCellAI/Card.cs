@@ -4,14 +4,14 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  struct Card : IEquatable<Card> {
-    static readonly Dictionary<char, byte> ranks;
-    static readonly Dictionary<byte, char> fromRank;
+  struct Card : IEquatable<Card>, IComparable<Card> {
+    static readonly Dictionary<char, sbyte> ranks;
+    static readonly Dictionary<sbyte, char> fromRank;
     static readonly Dictionary<char, Suit> suits;
     static readonly Dictionary<Suit, char> fromSuit;
 
     static Card() {
-      ranks = new Dictionary<char, byte> {
+      ranks = new Dictionary<char, sbyte> {
         ['A'] = 1,
         ['0'] = 10,
         ['J'] = 11,
@@ -19,7 +19,7 @@ namespace FreeCellAI
         ['K'] = 13,
       };
       for (var i = 2; i <= 9; ++i) {
-        ranks.Add((char)('0' + i), (byte)i);
+        ranks.Add((char)('0' + i), (sbyte)i);
       }
       suits = Enum.GetValues(typeof(Suit)).Cast<Suit>().ToDictionary(s => Enum.GetName(typeof(Suit), s)[0]);
 
@@ -27,7 +27,7 @@ namespace FreeCellAI
       fromSuit = suits.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
     }
 
-    public byte Rank { get; private set; }
+    public sbyte Rank { get; private set; }
     public Suit Suit { get; private set; }
     public Card(string card) {
       if (card.Length != 2) {
@@ -44,7 +44,7 @@ namespace FreeCellAI
     }
 
     public Card(int rank, Suit suit) {
-      Rank = (byte)rank;
+      Rank = (sbyte)rank;
       Suit = suit;
     }
 
@@ -57,9 +57,15 @@ namespace FreeCellAI
     public override int GetHashCode() => HashCode.Combine(Rank, Suit);
     public override string ToString() => Rank == 0 ? throw new InvalidOperationException("Card is unitialized!") : 
       $"{fromRank[Rank]}{fromSuit[Suit]}";
+    public int CompareTo(Card other) {
+      if (Rank != other.Rank) {
+        return Rank - other.Rank;
+      }
+      return Suit - other.Suit;
+    }
   }
 
-  enum Suit : byte
+  enum Suit : sbyte
   {
     Clubs,
     Diamonds,

@@ -111,16 +111,16 @@ namespace FreeCellAI
     }
 
     IEnumerable<Position> GetFroms() {
-      var free = freeCells.SelectMany((c, i) => c.HasValue ? new[] { new Position(Kind.FreeCell, (byte)i) } : new Position[0]);
-      var tab = tableau.SelectMany((col, i) => col.Any() ? new[] { new Position(Kind.Tableau, (byte)i) } : new Position[0]);
+      var free = freeCells.SelectMany((c, i) => c.HasValue ? new[] { new Position(Kind.FreeCell, (sbyte)i) } : new Position[0]);
+      var tab = tableau.SelectMany((col, i) => col.Any() ? new[] { new Position(Kind.Tableau, (sbyte)i) } : new Position[0]);
       return free.Concat(tab);
     }
 
     IEnumerable<Position> GetTos() {
       var free = freeCells
-        .SelectMany((c, i) => c.HasValue ? new Position[0] : new[] { new Position(Kind.FreeCell, (byte)i) })
+        .SelectMany((c, i) => c.HasValue ? new Position[0] : new[] { new Position(Kind.FreeCell, (sbyte)i) })
         .FirstOrDefault(); // Only move to the first occupied freeCell 
-      var tos = Enumerable.Range(0, tableau.Count).Select(i => new Position(Kind.Tableau, (byte)i)).ToList();
+      var tos = Enumerable.Range(0, tableau.Count).Select(i => new Position(Kind.Tableau, (sbyte)i)).ToList();
       tos.Add(new Position(Kind.Foundation, 0));
       if (free.Kind != Kind.Uninitialized) {
         tos.Add(free);
@@ -157,7 +157,7 @@ namespace FreeCellAI
     internal Game Clone() => new Game(tableau, foundations, freeCells);
     object ICloneable.Clone() => Clone();
 
-    internal enum Kind : byte
+    internal enum Kind : sbyte
     {
       Uninitialized = 0,
       Tableau,
@@ -167,13 +167,13 @@ namespace FreeCellAI
 
     internal struct Position : IEquatable<Position>
     {
-      public Position(Kind kind, byte index) {
+      public Position(Kind kind, sbyte index) {
         Kind = kind;
         Index = index;
       }
 
       public Kind Kind { get; private set; }
-      public byte Index { get; private set; }
+      public sbyte Index { get; private set; }
 
       public override bool Equals(object obj) => obj is Position && Equals((Position)obj);
       public bool Equals(Position other) => Kind == other.Kind && Index == other.Index;
