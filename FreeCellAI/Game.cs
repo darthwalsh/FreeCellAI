@@ -110,6 +110,35 @@ namespace FreeCellAI
       return true;
     }
 
+    IEnumerable<Position> GetFroms() {
+      var free = freeCells.SelectMany((c, i) => c.HasValue ? new[] { new Position(Kind.FreeCell, (byte)i) } : new Position[0]);
+      var tab = tableau.SelectMany((col, i) => col.Any() ? new[] { new Position(Kind.Tableau, (byte)i) } : new Position[0]);
+      return free.Concat(tab);
+    }
+
+    IEnumerable<Position> GetTos() {
+      var free = freeCells
+        .SelectMany((c, i) => c.HasValue ? new Position[0] : new[] { new Position(Kind.FreeCell, (byte)i) })
+        .FirstOrDefault(); // Only move to the first occupied freeCell 
+      var tos = Enumerable.Range(0, tableau.Count).Select(i => new Position(Kind.Tableau, (byte)i)).ToList();
+      tos.Add(new Position(Kind.Foundation, 0));
+      if (free.Kind != Kind.Uninitialized) {
+        tos.Add(free);
+      }
+      return tos;
+    }
+
+    internal IEnumerable<Move> GetPossibleMoves() {
+      foreach (var from in GetFroms()) {
+        foreach (var to in GetTos()) {
+          var move = new Move(from, to);
+          if (TryMove(move, out var result)) {
+            yield return move;
+          }
+        }
+      }
+    }
+
     public override string ToString() {
       var found = Enum.GetValues(typeof(Suit)).Cast<Suit>().Select(s =>
         foundations[s] > 0 ? new Card(foundations[s], s).ToString() : "  ");
@@ -130,12 +159,13 @@ namespace FreeCellAI
 
     internal enum Kind : byte
     {
+      Uninitialized = 0,
       Tableau,
       Foundation,
       FreeCell,
     }
 
-    internal struct Position
+    internal struct Position : IEquatable<Position>
     {
       public Position(Kind kind, byte index) {
         Kind = kind;
@@ -144,9 +174,15 @@ namespace FreeCellAI
 
       public Kind Kind { get; private set; }
       public byte Index { get; private set; }
+
+      public override bool Equals(object obj) => obj is Position && Equals((Position)obj);
+      public bool Equals(Position other) => Kind == other.Kind && Index == other.Index;
+      public override int GetHashCode() => HashCode.Combine(Kind, Index);
+
+      public override string ToString() => Enum.GetName(typeof(Kind), Kind).Substring(0, 3) + Index;
     }
 
-    internal struct Move
+    internal struct Move : IEquatable<Move>
     {
       public Move(Position from, Position onto) {
         From = from;
@@ -155,6 +191,12 @@ namespace FreeCellAI
 
       public Position From { get; private set; }
       public Position Onto { get; private set; }
+
+      public override bool Equals(object obj) => obj is Move && Equals((Move)obj);
+      public bool Equals(Move other) => From.Equals(other.From) && Onto.Equals(other.Onto);
+      public override int GetHashCode() => HashCode.Combine(From, Onto);
+
+      public override string ToString() => $"{From} \u2192 {Onto}";
     }
   }
 }

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using FreeCellAI;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -128,6 +129,39 @@ JD 7D 0C 7C KD 4H 5D QC
    0S JC JH 4D         ", g.ToString());
     }
 
-    static void Move(ref Game game, Game.Move move) => Assert.IsTrue(game.TryMove(move, out game));
+
+
+    [TestMethod]
+    public void PossibleMovesMoveTests() {
+      const string text = @"
+0H 0D 9C 7S 8H AS 6S 3S
+8D 4C 3D 2D AD AH QH 4S
+9D 9S 8S 9H 8C KH JS 5C
+JD 7D 0C 7C KD 4H 5D QC
+4D 7H KC 5H KS 2C QS 6H
+2H 2S 3H QD 5S 6C AC 3C
+6D 0S JC JH            ";
+      var g = Importer.FromString(text);
+      var moves = g.GetPossibleMoves().ToList();
+      CollectionAssert.AreEquivalent(Enumerable.Range(0, 8).Select(c => new Game.Move(
+        new Game.Position(Game.Kind.Tableau, (byte)c),
+        new Game.Position(Game.Kind.FreeCell, 0)))
+        .Concat(new[] {
+          // AC
+          new Game.Move(
+            new Game.Position(Game.Kind.Tableau, 6),
+            new Game.Position(Game.Kind.Foundation, 0)),
+          // 0S
+          new Game.Move(
+            new Game.Position(Game.Kind.Tableau, 1),
+            new Game.Position(Game.Kind.Tableau, 3)),
+          // 5S
+          new Game.Move(
+            new Game.Position(Game.Kind.Tableau, 4),
+            new Game.Position(Game.Kind.Tableau, 0)),
+        }).ToList(), moves);
+    }
+
+      static void Move(ref Game game, Game.Move move) => Assert.IsTrue(game.TryMove(move, out game));
   }
 }
