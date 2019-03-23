@@ -54,9 +54,9 @@ JD 7D 0C 7C KD 4H 5D QC
 2H 2S 3H QD 5S 6C AC 3C
 6D 0S JC JH            ";
       var g = Importer.FromString(text);
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 0),
-        new Game.Position(Game.Kind.FreeCell, 0)
+      Move(ref g, new Move(
+        new Position(Kind.Tableau, 0),
+        new Position(Kind.FreeCell, 0)
       ));
       Assert.AreEqual(@"6D                     
                        
@@ -68,24 +68,24 @@ JD 7D 0C 7C KD 4H 5D QC
 2H 2S 3H QD 5S 6C AC 3C
    0S JC JH            ", g.ToString());
 
-      Assert.IsFalse(g.TryMove(new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 0),
-        new Game.Position(Game.Kind.FreeCell, 0)
+      Assert.IsFalse(g.TryMove(new Move(
+        new Position(Kind.Tableau, 0),
+        new Position(Kind.FreeCell, 0)
       ), out _));
 
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 0),
-        new Game.Position(Game.Kind.FreeCell, 1)
+      Move(ref g, new Move(
+        new Position(Kind.Tableau, 0),
+        new Position(Kind.FreeCell, 1)
       ));
 
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 0),
-        new Game.Position(Game.Kind.FreeCell, 2)
+      Move(ref g, new Move(
+        new Position(Kind.Tableau, 0),
+        new Position(Kind.FreeCell, 2)
       ));
 
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 0),
-        new Game.Position(Game.Kind.FreeCell, 3)
+      Move(ref g, new Move(
+        new Position(Kind.Tableau, 0),
+        new Position(Kind.FreeCell, 3)
       ));
 
       Assert.AreEqual(@"6D 2H 4D JD            
@@ -98,9 +98,9 @@ JD 7D 0C 7C KD 4H 5D QC
    2S 3H QD 5S 6C AC 3C
    0S JC JH            ", g.ToString());
 
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 6),
-        new Game.Position(Game.Kind.Foundation, 0)
+      Move(ref g, new Move(
+        new Position(Kind.Tableau, 6),
+        new Position(Kind.Foundation, 0)
       ));
 
       Assert.AreEqual(@"6D 2H 4D JD AC         
@@ -113,9 +113,9 @@ JD 7D 0C 7C KD 4H 5D QC
    2S 3H QD 5S 6C    3C
    0S JC JH            ", g.ToString());
 
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.FreeCell, 2),
-        new Game.Position(Game.Kind.Tableau, 4)
+      Move(ref g, new Move(
+        new Position(Kind.FreeCell, 2),
+        new Position(Kind.Tableau, 4)
       ));
 
       Assert.AreEqual(@"6D 2H    JD AC         
@@ -143,22 +143,22 @@ JD 7D 0C 7C KD 4H 5D QC
 6D 0S JC JH            ";
       var g = Importer.FromString(text);
       var moves = g.GetPossibleMoves().ToList();
-      CollectionAssert.AreEquivalent(Enumerable.Range(0, 8).Select(c => new Game.Move(
-        new Game.Position(Game.Kind.Tableau, (sbyte)c),
-        new Game.Position(Game.Kind.FreeCell, 0)))
+      CollectionAssert.AreEquivalent(Enumerable.Range(0, 8).Select(c => new Move(
+        new Position(Kind.Tableau, (sbyte)c),
+        new Position(Kind.FreeCell, 0)))
         .Concat(new[] {
           // AC
-          new Game.Move(
-            new Game.Position(Game.Kind.Tableau, 6),
-            new Game.Position(Game.Kind.Foundation, 0)),
+          new Move(
+            new Position(Kind.Tableau, 6),
+            new Position(Kind.Foundation, 0)),
           // 0S
-          new Game.Move(
-            new Game.Position(Game.Kind.Tableau, 1),
-            new Game.Position(Game.Kind.Tableau, 3)),
+          new Move(
+            new Position(Kind.Tableau, 1),
+            new Position(Kind.Tableau, 3)),
           // 5S
-          new Game.Move(
-            new Game.Position(Game.Kind.Tableau, 4),
-            new Game.Position(Game.Kind.Tableau, 0)),
+          new Move(
+            new Position(Kind.Tableau, 4),
+            new Position(Kind.Tableau, 0)),
         }).ToList(), moves);
     }
 
@@ -176,27 +176,27 @@ JD 7D 0C 7C KD 4H 5D QC
       var moves = g.GetOptimizedMoves().ToList();
       CollectionAssert.AreEquivalent(new[] {
           // AC
-          new Game.Move(
-            new Game.Position(Game.Kind.Tableau, 6),
-            new Game.Position(Game.Kind.Foundation, 0)),
+          new Move(
+            new Position(Kind.Tableau, 6),
+            new Position(Kind.Foundation, 0)),
       }, moves);
       Move(ref g, moves.Single());
 
       moves = g.GetOptimizedMoves().ToList();
       CollectionAssert.AreEquivalent(new[] {
           // 2C
-          new Game.Move(
-            new Game.Position(Game.Kind.Tableau, 6),
-            new Game.Position(Game.Kind.Foundation, 0)),
+          new Move(
+            new Position(Kind.Tableau, 6),
+            new Position(Kind.Foundation, 0)),
       }, moves);
       Move(ref g, moves.Single());
 
       Assert.IsTrue(g.GetOptimizedMoves().Count() > 1, "Shouldn't move up 3C");
 
       // JC
-      Move(ref g, new Game.Move(
-        new Game.Position(Game.Kind.Tableau, 2),
-        new Game.Position(Game.Kind.FreeCell, 0)));
+      Move(ref g, new Move(
+        new Position(Kind.Tableau, 2),
+        new Position(Kind.FreeCell, 0)));
 
       // AD
       Move(ref g, g.GetOptimizedMoves().Single());
@@ -206,9 +206,9 @@ JD 7D 0C 7C KD 4H 5D QC
       moves = g.GetOptimizedMoves().ToList();
       CollectionAssert.AreEquivalent(new[] {
           // 3C
-          new Game.Move(
-            new Game.Position(Game.Kind.Tableau, 7),
-            new Game.Position(Game.Kind.Foundation, 0)),
+          new Move(
+            new Position(Kind.Tableau, 7),
+            new Position(Kind.Foundation, 0)),
       }, moves);
     }
 
@@ -218,6 +218,6 @@ JD 7D 0C 7C KD 4H 5D QC
       CollectionAssert.AreEqual(cards, cards.OrderBy(c => c).ToList());
     }
 
-    static void Move(ref Game game, Game.Move move) => Assert.IsTrue(game.TryMove(move, out game));
+    static void Move(ref Game game, Move move) => Assert.IsTrue(game.TryMove(move, out game));
   }
 }

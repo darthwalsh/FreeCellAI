@@ -174,47 +174,47 @@ namespace FreeCellAI
     // If cloning is a bottleneck, consider switching to immutable stack implementation to reduce copying
     internal Game Clone() => new Game(tableau, foundations, freeCells);
     object ICloneable.Clone() => Clone();
+  }
 
-    internal enum Kind : sbyte
-    {
-      Uninitialized = 0,
-      Tableau,
-      Foundation,
-      FreeCell,
+  internal enum Kind : sbyte
+  {
+    Uninitialized = 0,
+    Tableau,
+    Foundation,
+    FreeCell,
+  }
+
+  internal struct Position : IEquatable<Position>
+  {
+    public Position(Kind kind, sbyte index) {
+      Kind = kind;
+      Index = index;
     }
 
-    internal struct Position : IEquatable<Position>
-    {
-      public Position(Kind kind, sbyte index) {
-        Kind = kind;
-        Index = index;
-      }
+    public Kind Kind { get; private set; }
+    public sbyte Index { get; private set; }
 
-      public Kind Kind { get; private set; }
-      public sbyte Index { get; private set; }
+    public override bool Equals(object obj) => obj is Position && Equals((Position)obj);
+    public bool Equals(Position other) => Kind == other.Kind && Index == other.Index;
+    public override int GetHashCode() => HashCode.Combine(Kind, Index);
 
-      public override bool Equals(object obj) => obj is Position && Equals((Position)obj);
-      public bool Equals(Position other) => Kind == other.Kind && Index == other.Index;
-      public override int GetHashCode() => HashCode.Combine(Kind, Index);
+    public override string ToString() => Enum.GetName(typeof(Kind), Kind).Substring(0, 3) + Index;
+  }
 
-      public override string ToString() => Enum.GetName(typeof(Kind), Kind).Substring(0, 3) + Index;
+  internal struct Move : IEquatable<Move>
+  {
+    public Move(Position from, Position onto) {
+      From = from;
+      Onto = onto;
     }
 
-    internal struct Move : IEquatable<Move>
-    {
-      public Move(Position from, Position onto) {
-        From = from;
-        Onto = onto;
-      }
+    public Position From { get; private set; }
+    public Position Onto { get; private set; }
 
-      public Position From { get; private set; }
-      public Position Onto { get; private set; }
+    public override bool Equals(object obj) => obj is Move && Equals((Move)obj);
+    public bool Equals(Move other) => From.Equals(other.From) && Onto.Equals(other.Onto);
+    public override int GetHashCode() => HashCode.Combine(From, Onto);
 
-      public override bool Equals(object obj) => obj is Move && Equals((Move)obj);
-      public bool Equals(Move other) => From.Equals(other.From) && Onto.Equals(other.Onto);
-      public override int GetHashCode() => HashCode.Combine(From, Onto);
-
-      public override string ToString() => $"{From} \u2192 {Onto}";
-    }
+    public override string ToString() => $"{From} \u2192 {Onto}";
   }
 }
