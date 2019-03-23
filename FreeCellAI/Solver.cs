@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  static class Solver
+  public static class Solver
   {
     public static bool TrySolve(Game g, out Change solution) {
       var seen = new HashSet<Game>();
@@ -37,7 +37,7 @@ namespace FreeCellAI
     }
   }
 
-  class Change
+  public class Change
   {
     public Change Previous { get; set; }
     public Game Game { get; set; }

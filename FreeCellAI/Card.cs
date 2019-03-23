@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  struct Card : IEquatable<Card>, IComparable<Card> {
+  public struct Card : IEquatable<Card>, IComparable<Card> {
     static readonly Dictionary<char, sbyte> ranks;
     static readonly Dictionary<sbyte, char> fromRank;
     static readonly Dictionary<char, Suit> suits;
@@ -66,7 +66,7 @@ namespace FreeCellAI
     public static bool IsRed(Suit s) => s == Suit.Diamonds || s == Suit.Hearts;
   }
 
-  enum Suit : sbyte
+  public enum Suit : sbyte
   {
     Clubs,
     Diamonds,

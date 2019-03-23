@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  class Game : ICloneable, IEquatable<Game>
+  public class Game : ICloneable, IEquatable<Game>
   {
     readonly List<List<Card>> tableau;
     readonly Dictionary<Suit, int> foundations;
@@ -14,20 +14,24 @@ namespace FreeCellAI
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
       tableau,
       Card.AllSuits.ToDictionary(s => s, s => 0),
-      Enumerable.Repeat<Card?>(null, 4).ToList()) { }
+      Enumerable.Repeat<Card?>(null, 4).ToList(),
+      checkCounts: true) { }
 
-    Game(IEnumerable<IEnumerable<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells) {
-      var allCards = tableau.SelectMany(col => col)
-        .Concat(freeCells.SelectMany(c => c.HasValue ? new[] { c.Value } : new Card[0]))
-        .Concat(foundations.SelectMany(kvp => Enumerable.Range(1, kvp.Value).Select(r => new Card(r, kvp.Key))));
-      if (allCards.Count() != 52) {
-        throw new ArgumentException($"{allCards.Count()} cards");
-      }
-      var dups = allCards.GroupBy(c => c).Where(g => g.Count() > 1);
-      if (dups.Any()) {
-        throw new ArgumentException($"{dups.First().Key} was repeated!");
+    Game(IEnumerable<IEnumerable<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts) {
+      if (checkCounts) {
+        var allCards = tableau.SelectMany(col => col)
+          .Concat(freeCells.SelectMany(c => c.HasValue ? new[] { c.Value } : new Card[0]))
+          .Concat(foundations.SelectMany(kvp => Enumerable.Range(1, kvp.Value).Select(r => new Card(r, kvp.Key))));
+        if (allCards.Count() != 52) {
+          throw new ArgumentException($"{allCards.Count()} cards");
+        }
+        var dups = allCards.GroupBy(c => c).Where(g => g.Count() > 1);
+        if (dups.Any()) {
+          throw new ArgumentException($"{dups.First().Key} was repeated!");
+        } 
       }
 
+      // TODO make this a List<ImmutableStack> because the ToList() bottlenecks the search
       this.tableau = tableau.Select(col => col.ToList()).ToList();
       this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       this.freeCells = freeCells.ToList();
@@ -55,7 +59,7 @@ namespace FreeCellAI
           if (col.Count == 0) {
             return true;
           }
-          return card.CanMoveOnto(col.Last());
+          return card.CanMoveOnto(col[col.Count - 1]);
         case Kind.Foundation:
           return foundations[card.Suit] + 1 == card.Rank;
         case Kind.FreeCell:
@@ -71,7 +75,7 @@ namespace FreeCellAI
           if (col.Count == 0) {
             throw new InvalidOperationException("Can't move from empty column");
           }
-          return col.Last();
+          return col[col.Count - 1];
         case Kind.Foundation:
           throw new InvalidOperationException("Can't move from foundation");
         case Kind.FreeCell:
@@ -88,7 +92,7 @@ namespace FreeCellAI
           if (col.Count == 0) {
             throw new InvalidOperationException("Can't move from empty column");
           }
-          card = col.Last();
+          card = col[col.Count - 1];
           col.RemoveAt(col.Count - 1);
           break;
         case Kind.Foundation:
@@ -165,8 +169,9 @@ namespace FreeCellAI
     }
 
     internal IEnumerable<Move> GetPossibleMoves() {
+      var tos = GetTos().ToList(); // cache for performance
       foreach (var from in GetFroms()) {
-        foreach (var to in GetTos()) {
+        foreach (var to in tos) {
           if (CanMove(GetCard(from), to)) {
             yield return new Move(from, to);
           }
@@ -191,7 +196,7 @@ namespace FreeCellAI
     }
 
     // If cloning is a bottleneck, consider switching to immutable stack implementation to reduce copying
-    internal Game Clone() => new Game(tableau, foundations, freeCells);
+    internal Game Clone() => new Game(tableau, foundations, freeCells, checkCounts: false); // Skip counts for performance
     object ICloneable.Clone() => Clone();
     public override bool Equals(object obj) => Equals(obj as Game);
     public bool Equals(Game other) => other != null && 
@@ -201,7 +206,7 @@ namespace FreeCellAI
     public override int GetHashCode() => hashCode;
   }
 
-  internal enum Kind : sbyte
+  public enum Kind : sbyte
   {
     Uninitialized = 0,
     Tableau,
@@ -209,7 +214,7 @@ namespace FreeCellAI
     FreeCell,
   }
 
-  internal struct Position : IEquatable<Position>
+  public struct Position : IEquatable<Position>
   {
     public Position(Kind kind, sbyte index) {
       Kind = kind;
@@ -226,7 +231,7 @@ namespace FreeCellAI
     public override string ToString() => Enum.GetName(typeof(Kind), Kind).Substring(0, 3) + Index;
   }
 
-  internal struct Move : IEquatable<Move>
+  public struct Move : IEquatable<Move>
   {
     public Move(Position from, Position onto) {
       From = from;
