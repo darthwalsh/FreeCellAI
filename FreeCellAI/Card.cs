@@ -21,7 +21,7 @@ namespace FreeCellAI
       for (var i = 2; i <= 9; ++i) {
         ranks.Add((char)('0' + i), (sbyte)i);
       }
-      suits = Enum.GetValues(typeof(Suit)).Cast<Suit>().ToDictionary(s => Enum.GetName(typeof(Suit), s)[0]);
+      suits = AllSuits.ToDictionary(s => Enum.GetName(typeof(Suit), s)[0]);
 
       fromRank = ranks.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
       fromSuit = suits.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
@@ -62,6 +62,7 @@ namespace FreeCellAI
       return Suit - other.Suit;
     }
 
+    public static readonly IEnumerable<Suit> AllSuits = new[] { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades };
     public static bool IsRed(Suit s) => s == Suit.Diamonds || s == Suit.Hearts;
   }
 

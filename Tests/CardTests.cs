@@ -14,6 +14,7 @@ namespace Tests
       var g = Importer.FromFile(path);
       Assert.IsTrue(g.ToString().EndsWith(File.ReadAllText(path)));
     }
+
     [TestMethod]
     public void TrickyImportTest() {
       const string text = @"

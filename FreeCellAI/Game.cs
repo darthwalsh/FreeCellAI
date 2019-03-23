@@ -4,14 +4,16 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  class Game : ICloneable {
+  class Game : ICloneable, IEquatable<Game>
+  {
     readonly List<List<Card>> tableau;
     readonly Dictionary<Suit, int> foundations;
     readonly List<Card?> freeCells;
+    readonly int hashCode;
 
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
       tableau,
-      Enum.GetValues(typeof(Suit)).Cast<Suit>().ToDictionary(s => s, s => 0),
+      Card.AllSuits.ToDictionary(s => s, s => 0),
       Enumerable.Repeat<Card?>(null, 4).ToList()) { }
 
     Game(IEnumerable<IEnumerable<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells) {
@@ -29,6 +31,21 @@ namespace FreeCellAI
       this.tableau = tableau.Select(col => col.ToList()).ToList();
       this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       this.freeCells = freeCells.ToList();
+
+      var hash = new HashCode();
+      foreach (var col in tableau) {
+        foreach (var card in tableau) {
+          hash.Add(card);
+        }
+      }
+      foreach (var suit in Card.AllSuits) {
+        hash.Add(foundations[suit]);
+      }
+      //TODO order freeCells
+      foreach (var card in freeCells) {
+        hash.Add(card);
+      }
+      hashCode = hash.ToHashCode();
     }
 
     bool CanMove(Card card, Position onto) {
@@ -157,8 +174,10 @@ namespace FreeCellAI
       }
     }
 
+    public bool Solved => Card.AllSuits.All(suit => foundations[suit] == 13);
+
     public override string ToString() {
-      var found = Enum.GetValues(typeof(Suit)).Cast<Suit>().Select(s =>
+      var found = Card.AllSuits.Select(s =>
         foundations[s] > 0 ? new Card(foundations[s], s).ToString() : "  ");
       var free = freeCells.Select(c => c.HasValue ? c.ToString() : "  ");
       var topRow = string.Join(" ", free.Concat(found)); 
@@ -174,6 +193,12 @@ namespace FreeCellAI
     // If cloning is a bottleneck, consider switching to immutable stack implementation to reduce copying
     internal Game Clone() => new Game(tableau, foundations, freeCells);
     object ICloneable.Clone() => Clone();
+    public override bool Equals(object obj) => Equals(obj as Game);
+    public bool Equals(Game other) => other != null && 
+      tableau.Zip(other.tableau, (col, oCol) => col.SequenceEqual(oCol)).All(b => b) && 
+      foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) && 
+      freeCells.SequenceEqual(other.freeCells);
+    public override int GetHashCode() => hashCode;
   }
 
   internal enum Kind : sbyte
