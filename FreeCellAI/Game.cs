@@ -128,12 +128,30 @@ namespace FreeCellAI
       return tos;
     }
 
+    internal IEnumerable<Move> GetOptimizedMoves() {
+      // i.e. if foundation has 3H 4D, then any black 5 or lower should immediately go to foundation
+      var lowestRed = foundations.Where(kvp => Card.IsRed(kvp.Key)).Min(kvp => kvp.Value);
+      var lowestBlack = foundations.Where(kvp => !Card.IsRed(kvp.Key)).Min(kvp => kvp.Value);
+
+      var moves = GetPossibleMoves();
+      var best = moves
+        .Where(m => m.Onto.Kind == Kind.Foundation)
+        .Where(m => {
+          var card = GetCard(m.From);
+          var limit = 2 + (Card.IsRed(card.Suit) ? lowestBlack : lowestRed);
+          return card.Rank <= limit;
+        });
+      if (best.Any()) {
+        return new[] { best.First() };
+      }
+      return moves;
+    }
+
     internal IEnumerable<Move> GetPossibleMoves() {
       foreach (var from in GetFroms()) {
         foreach (var to in GetTos()) {
-          var move = new Move(from, to);
-          if (TryMove(move, out var result)) {
-            yield return move;
+          if (CanMove(GetCard(from), to)) {
+            yield return new Move(from, to);
           }
         }
       }

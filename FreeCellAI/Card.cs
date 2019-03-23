@@ -47,10 +47,8 @@ namespace FreeCellAI
       Rank = (sbyte)rank;
       Suit = suit;
     }
-
-    public bool IsRed() => Suit == Suit.Diamonds || Suit == Suit.Hearts;
-
-    public bool CanMoveOnto(Card other) => (IsRed() != other.IsRed()) && Rank + 1 == other.Rank;
+    
+    public bool CanMoveOnto(Card other) => (IsRed(Suit) != IsRed(other.Suit)) && Rank + 1 == other.Rank;
 
     public override bool Equals(object obj) => obj is Card && Equals((Card)obj);
     public bool Equals(Card other) => Rank == other.Rank && Suit == other.Suit;
@@ -63,6 +61,8 @@ namespace FreeCellAI
       }
       return Suit - other.Suit;
     }
+
+    public static bool IsRed(Suit s) => s == Suit.Diamonds || s == Suit.Hearts;
   }
 
   enum Suit : sbyte

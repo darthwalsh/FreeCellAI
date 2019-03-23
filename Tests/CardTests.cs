@@ -132,7 +132,7 @@ JD 7D 0C 7C KD 4H 5D QC
 
 
     [TestMethod]
-    public void PossibleMovesMoveTests() {
+    public void PossibleMovesTests() {
       const string text = @"
 0H 0D 9C 7S 8H AS 6S 3S
 8D 4C 3D 2D AD AH QH 4S
@@ -160,6 +160,56 @@ JD 7D 0C 7C KD 4H 5D QC
             new Game.Position(Game.Kind.Tableau, 4),
             new Game.Position(Game.Kind.Tableau, 0)),
         }).ToList(), moves);
+    }
+
+    [TestMethod]
+    public void OptimizedMoveTests() {
+      const string text = @"
+0H 0D 9C 7S 8H AS 6S 3S
+8D 4C 3D 2D 3H KC QH 4S
+9D 9S 8S 9H 8C KH JS 5C
+JD 7D 0C 7C KD 4H 5D QC
+4D 7H AH 5H KS QS 2C 6H
+2H 2S AD QD 5S 6C AC 3C
+6D 0S JC JH            ";
+      var g = Importer.FromString(text);
+      var moves = g.GetOptimizedMoves().ToList();
+      CollectionAssert.AreEquivalent(new[] {
+          // AC
+          new Game.Move(
+            new Game.Position(Game.Kind.Tableau, 6),
+            new Game.Position(Game.Kind.Foundation, 0)),
+      }, moves);
+      Move(ref g, moves.Single());
+
+      moves = g.GetOptimizedMoves().ToList();
+      CollectionAssert.AreEquivalent(new[] {
+          // 2C
+          new Game.Move(
+            new Game.Position(Game.Kind.Tableau, 6),
+            new Game.Position(Game.Kind.Foundation, 0)),
+      }, moves);
+      Move(ref g, moves.Single());
+
+      Assert.IsTrue(g.GetOptimizedMoves().Count() > 1, "Shouldn't move up 3C");
+
+      // JC
+      Move(ref g, new Game.Move(
+        new Game.Position(Game.Kind.Tableau, 2),
+        new Game.Position(Game.Kind.FreeCell, 0)));
+
+      // AD
+      Move(ref g, g.GetOptimizedMoves().Single());
+      // AH
+      Move(ref g, g.GetOptimizedMoves().Single());
+
+      moves = g.GetOptimizedMoves().ToList();
+      CollectionAssert.AreEquivalent(new[] {
+          // 3C
+          new Game.Move(
+            new Game.Position(Game.Kind.Tableau, 7),
+            new Game.Position(Game.Kind.Foundation, 0)),
+      }, moves);
     }
 
     [TestMethod]
