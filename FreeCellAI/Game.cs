@@ -9,6 +9,7 @@ namespace FreeCellAI
     readonly List<List<Card>> tableau;
     readonly Dictionary<Suit, int> foundations;
     readonly List<Card?> freeCells;
+    readonly List<Card?> orderedFreeCells;
     readonly int hashCode;
 
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
@@ -35,18 +36,19 @@ namespace FreeCellAI
       this.tableau = tableau.Select(col => col.ToList()).ToList();
       this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       this.freeCells = freeCells.ToList();
+      this.orderedFreeCells = freeCells.ToList();
+      this.orderedFreeCells.Sort();
 
       var hash = new HashCode();
-      foreach (var col in tableau) {
-        foreach (var card in tableau) {
+      foreach (var col in this.tableau) {
+        foreach (var card in col) {
           hash.Add(card);
         }
       }
       foreach (var suit in Card.AllSuits) {
-        hash.Add(foundations[suit]);
+        hash.Add(this.foundations[suit]);
       }
-      //TODO order freeCells
-      foreach (var card in freeCells) {
+      foreach (var card in orderedFreeCells) {
         hash.Add(card);
       }
       hashCode = hash.ToHashCode();
@@ -204,8 +206,8 @@ namespace FreeCellAI
     public override bool Equals(object obj) => Equals(obj as Game);
     public bool Equals(Game other) => other != null && 
       tableau.Zip(other.tableau, (col, oCol) => col.SequenceEqual(oCol)).All(b => b) && 
-      foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) && 
-      freeCells.SequenceEqual(other.freeCells);
+      foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) &&
+      orderedFreeCells.SequenceEqual(other.orderedFreeCells);
     public override int GetHashCode() => hashCode;
   }
 
