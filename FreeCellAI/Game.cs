@@ -172,6 +172,9 @@ namespace FreeCellAI
       var tos = GetTos().ToList(); // cache for performance
       foreach (var from in GetFroms()) {
         foreach (var to in tos) {
+          if (from.Equals(to)) {
+            continue;
+          }
           if (CanMove(GetCard(from), to)) {
             yield return new Move(from, to);
           }
