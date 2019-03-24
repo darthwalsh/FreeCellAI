@@ -6,19 +6,19 @@ namespace FreeCellAI
 {
   public class Game : ICloneable, IEquatable<Game>
   {
-    readonly List<List<Card>> tableau;
+    readonly List<ImmutableStack<Card>> tableau;
     readonly Dictionary<Suit, int> foundations;
     readonly List<Card?> freeCells;
     readonly List<Card?> orderedFreeCells;
     readonly int hashCode;
 
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
-      tableau,
+      tableau.Select(ImmutableStack<Card>.New),
       Card.AllSuits.ToDictionary(s => s, s => 0),
       Enumerable.Repeat<Card?>(null, 4).ToList(),
       checkCounts: true) { }
 
-    Game(IEnumerable<IEnumerable<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts) {
+    Game(IEnumerable<ImmutableStack<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts) {
       if (checkCounts) {
         var allCards = tableau.SelectMany(col => col)
           .Concat(freeCells.SelectMany(c => c.HasValue ? new[] { c.Value } : new Card[0]))
@@ -32,8 +32,7 @@ namespace FreeCellAI
         } 
       }
 
-      // TODO make this a List<ImmutableStack> because the ToList() bottlenecks the search
-      this.tableau = tableau.Select(col => col.ToList()).ToList();
+      this.tableau = tableau.ToList();
       this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       this.freeCells = freeCells.ToList();
       this.orderedFreeCells = freeCells.ToList();
@@ -58,10 +57,10 @@ namespace FreeCellAI
       switch (onto.Kind) {
         case Kind.Tableau:
           var col = tableau[onto.Index];
-          if (col.Count == 0) {
+          if (col.IsEmpty) {
             return true;
           }
-          return card.CanMoveOnto(col[col.Count - 1]);
+          return card.CanMoveOnto(col.Head);
         case Kind.Foundation:
           return foundations[card.Suit] + 1 == card.Rank;
         case Kind.FreeCell:
@@ -74,10 +73,10 @@ namespace FreeCellAI
       switch (pos.Kind) {
         case Kind.Tableau:
           var col = tableau[pos.Index];
-          if (col.Count == 0) {
+          if (col.IsEmpty) {
             throw new InvalidOperationException("Can't move from empty column");
           }
-          return col[col.Count - 1];
+          return col.Head;
         case Kind.Foundation:
           throw new InvalidOperationException("Can't move from foundation");
         case Kind.FreeCell:
@@ -91,11 +90,11 @@ namespace FreeCellAI
       switch (move.From.Kind) {
         case Kind.Tableau:
           var col = tableau[move.From.Index];
-          if (col.Count == 0) {
+          if (col.IsEmpty) {
             throw new InvalidOperationException("Can't move from empty column");
           }
-          card = col[col.Count - 1];
-          col.RemoveAt(col.Count - 1);
+          card = col.Head;
+          tableau[move.From.Index] = col.Pop();
           break;
         case Kind.Foundation:
           throw new InvalidOperationException("Can't move from foundation");
@@ -109,8 +108,7 @@ namespace FreeCellAI
 
       switch (move.Onto.Kind) {
         case Kind.Tableau:
-          var col = tableau[move.Onto.Index];
-          col.Add(card);
+          tableau[move.Onto.Index] = tableau[move.Onto.Index].Push(card);
           break;
         case Kind.Foundation:
           foundations[card.Suit]++;
@@ -193,8 +191,9 @@ namespace FreeCellAI
       var topRow = string.Join(" ", free.Concat(found)); 
       var blank = new string(' ', tableau.Count * 3 - 1);
 
-      var strings = tableau.Select(col => col.Select(c => c.ToString()).ToList());
-      var rows = tableau.Max(col => col.Count);
+      // Reverse is needed because stack enumerates backwards
+      var strings = tableau.Select(col => col.Reverse().Select(c => c.ToString()).ToList());
+      var rows = tableau.Max(col => col.Count());
       var lines = Enumerable.Range(0, rows).Select(i => string.Join(" ", 
         strings.Select(col => i < col.Count ? col[i] : "  ")));
       return string.Join(Environment.NewLine, new[] { topRow, blank }.Concat(lines));
@@ -250,6 +249,6 @@ namespace FreeCellAI
     public bool Equals(Move other) => From.Equals(other.From) && Onto.Equals(other.Onto);
     public override int GetHashCode() => HashCode.Combine(From, Onto);
 
-    public override string ToString() => $"{From} \u2192 {Onto}";
+    public override string ToString() => $"{From} > {Onto}";
   }
 }

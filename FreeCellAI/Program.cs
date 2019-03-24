@@ -18,10 +18,10 @@ JD 7D 0C 7C KD 4H 5D QC
         Console.Error.WriteLine("No Solution");
         Environment.Exit(1);
       }
-      for (; solution != null; solution = solution.Previous) {
+      for (var i = 0; solution != null; solution = solution.Previous, i++) {
         Console.WriteLine(solution.Game);
         Console.WriteLine("");
-        Console.WriteLine(solution.Move);
+        Console.WriteLine($"{i}:  {solution.Move}");
         Console.WriteLine("");
       }
     }
