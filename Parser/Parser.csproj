@@ -1,8 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="ranks\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ranks\*" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ImageParse" Version="1.2.0" />

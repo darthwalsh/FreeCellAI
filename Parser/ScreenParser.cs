@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using ImageParse;
 
@@ -32,16 +30,29 @@ namespace Parser
     {
         IAsyncBitmap image;
         Finder finder;
+        Dictionary<char, bool[,]> ranks;
         public ScreenParser(IAsyncBitmap image)
         {
             this.image = image;
             finder = new Finder(image);
 
-            for (var x = 0; x < bitmap.Width; ++x)
+            ranks = new Dictionary<char, bool[,]>();
+            var assembly = Assembly.GetExecutingAssembly();
+            foreach (var name in assembly.GetManifestResourceNames())
             {
-                for (var y = 0; y < bitmap.Height; ++y)
+                using (var stream = assembly.GetManifestResourceStream(name))
+                using (var bitmap = new Bitmap(stream))
                 {
-                    bitmap.SetPixel(x, y, Colors.IsSuit(bitmap.GetPixel(x, y)) ? Color.White : Color.Black);
+                    var pixels = new bool[bitmap.Width, bitmap.Height];
+                    for (var y = 0; y < bitmap.Height; ++y)
+                    {
+                        for (var x = 0; x < bitmap.Width; ++x)
+                        {
+                            pixels[x,y] = bitmap.GetPixel(x, y).ArgbEquals(Color.White);
+                        }
+                    }
+                    var rank = name.Replace("Parser.ranks.", "").Replace(".bmp", "").Single();
+                    ranks[rank] = pixels;
                 }
             }
         }
@@ -103,23 +114,9 @@ namespace Parser
                 rankP = await finder.FindColor(Dir.Left(rankP), Colors.IsSuit, Dir.Left);
                 rankBorder = await finder.FindBoundary(rankP);
             }
-            Debug.WriteLine(rankBorder.ToString());
-            WriteToFile(rankBorder);
             //TODO parse rank
 
             return "" + suit;
-        }
-
-        Bitmap bitmap = new Bitmap("game0.png");
-        int count;
-
-        [Conditional("DEBUG")]
-        void WriteToFile(Rectangle rect)
-        {
-            using (var compressed = bitmap.Clone(rect, PixelFormat.Format1bppIndexed))
-            {
-                compressed.Save($"{count++}.bmp");
-            }
         }
     }
 }
