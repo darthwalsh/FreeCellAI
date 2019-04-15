@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -44,14 +45,16 @@ namespace GUI
                     IAsyncBitmap = new DelayedBitmap
                     {
                         DelayInterval = fps,
-                        DelayCount = 5,
+                        DelayCount = 50,
                         IAsyncBitmap = new WrappingBitmap
                         {
                             Bitmap = image,
                         },
                     },
                 });
-                await parser.Parse();
+                var parsed = await parser.Parse();
+                Debug.WriteLine(parsed);
+                pictureBox.Refresh();
             }
         }
     }
