@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ImageParse;
@@ -34,6 +36,14 @@ namespace Parser
         {
             this.image = image;
             finder = new Finder(image);
+
+            for (var x = 0; x < bitmap.Width; ++x)
+            {
+                for (var y = 0; y < bitmap.Height; ++y)
+                {
+                    bitmap.SetPixel(x, y, Colors.IsSuit(bitmap.GetPixel(x, y)) ? Color.White : Color.Black);
+                }
+            }
         }
 
         public async Task<string> Parse()
@@ -85,9 +95,31 @@ namespace Parser
                 suit = test.ArgbEquals(Colors.Black) || test.ArgbEquals(Colors.BlackDim) ? 'C' : 'S';
             }
 
+            var rankP = suitBorder.Left();
+            Rectangle rankBorder = Rectangle.Empty;
+
+            while (rankBorder.Width < 2)
+            {
+                rankP = await finder.FindColor(Dir.Left(rankP), Colors.IsSuit, Dir.Left);
+                rankBorder = await finder.FindBoundary(rankP);
+            }
+            Debug.WriteLine(rankBorder.ToString());
+            WriteToFile(rankBorder);
             //TODO parse rank
 
             return "" + suit;
+        }
+
+        Bitmap bitmap = new Bitmap("game0.png");
+        int count;
+
+        [Conditional("DEBUG")]
+        void WriteToFile(Rectangle rect)
+        {
+            using (var compressed = bitmap.Clone(rect, PixelFormat.Format1bppIndexed))
+            {
+                compressed.Save($"{count++}.bmp");
+            }
         }
     }
 }

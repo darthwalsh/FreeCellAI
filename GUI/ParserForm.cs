@@ -41,11 +41,11 @@ namespace GUI
 
                 var parser = new ScreenParser(new InvertingTrackingBitmap
                 {
-                    KeepCount = 2000,
+                    KeepCount = 5000,
                     IAsyncBitmap = new DelayedBitmap
                     {
                         DelayInterval = fps,
-                        DelayCount = 50,
+                        DelayCount = 400,
                         IAsyncBitmap = new WrappingBitmap
                         {
                             Bitmap = image,
