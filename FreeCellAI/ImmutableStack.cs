@@ -32,14 +32,14 @@ namespace FreeCellAI
     }
 
     public override bool Equals(object obj) => Equals(obj as ImmutableStack<T>);
-    public bool Equals(ImmutableStack<T> other) => other != null && 
-      ((IsEmpty || other.IsEmpty) ? 
+    public bool Equals(ImmutableStack<T> other) => other != null &&
+      ((IsEmpty || other.IsEmpty) ?
         (IsEmpty == other.IsEmpty) :
         EqualityComparer<T>.Default.Equals(Head, other.Head)) &&
       EqualityComparer<ImmutableStack<T>>.Default.Equals(tail, other.tail);
     public override int GetHashCode() => hashCode;
     public IEnumerator<T> GetEnumerator() {
-      for(var t = this; !t.IsEmpty; t = t.Pop()) {
+      for (var t = this; !t.IsEmpty; t = t.Pop()) {
         yield return t.Head;
       }
     }

@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  public struct Card : IEquatable<Card>, IComparable<Card> {
+  public struct Card : IEquatable<Card>, IComparable<Card>
+  {
     static readonly Dictionary<char, sbyte> ranks;
     static readonly Dictionary<sbyte, char> fromRank;
     static readonly Dictionary<char, Suit> suits;
@@ -47,13 +48,13 @@ namespace FreeCellAI
       Rank = (sbyte)rank;
       Suit = suit;
     }
-    
+
     public bool CanMoveOnto(Card other) => (IsRed(Suit) != IsRed(other.Suit)) && Rank + 1 == other.Rank;
 
     public override bool Equals(object obj) => obj is Card && Equals((Card)obj);
     public bool Equals(Card other) => Rank == other.Rank && Suit == other.Suit;
     public override int GetHashCode() => HashCode.Combine(Rank, Suit);
-    public override string ToString() => Rank == 0 ? throw new InvalidOperationException("Card is unitialized!") : 
+    public override string ToString() => Rank == 0 ? throw new InvalidOperationException("Card is unitialized!") :
       $"{fromRank[Rank]}{fromSuit[Suit]}";
     public int CompareTo(Card other) {
       if (Rank != other.Rank) {

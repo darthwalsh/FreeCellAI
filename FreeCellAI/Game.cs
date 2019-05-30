@@ -29,7 +29,7 @@ namespace FreeCellAI
         var dups = allCards.GroupBy(c => c).Where(g => g.Count() > 1);
         if (dups.Any()) {
           throw new ArgumentException($"{dups.First().Key} was repeated!");
-        } 
+        }
       }
 
       this.tableau = tableau.ToList();
@@ -188,13 +188,13 @@ namespace FreeCellAI
       var found = Card.AllSuits.Select(s =>
         foundations[s] > 0 ? new Card(foundations[s], s).ToString() : "  ");
       var free = freeCells.Select(c => c.HasValue ? c.ToString() : "  ");
-      var topRow = string.Join(" ", free.Concat(found)); 
+      var topRow = string.Join(" ", free.Concat(found));
       var blank = new string(' ', tableau.Count * 3 - 1);
 
       // Reverse is needed because stack enumerates backwards
       var strings = tableau.Select(col => col.Reverse().Select(c => c.ToString()).ToList());
       var rows = tableau.Max(col => col.Count());
-      var lines = Enumerable.Range(0, rows).Select(i => string.Join(" ", 
+      var lines = Enumerable.Range(0, rows).Select(i => string.Join(" ",
         strings.Select(col => i < col.Count ? col[i] : "  ")));
       return string.Join(Environment.NewLine, new[] { topRow, blank }.Concat(lines));
     }
@@ -203,8 +203,8 @@ namespace FreeCellAI
     internal Game Clone() => new Game(tableau, foundations, freeCells, checkCounts: false); // Skip counts for performance
     object ICloneable.Clone() => Clone();
     public override bool Equals(object obj) => Equals(obj as Game);
-    public bool Equals(Game other) => other != null && 
-      tableau.Zip(other.tableau, (col, oCol) => col.SequenceEqual(oCol)).All(b => b) && 
+    public bool Equals(Game other) => other != null &&
+      tableau.Zip(other.tableau, (col, oCol) => col.SequenceEqual(oCol)).All(b => b) &&
       foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) &&
       orderedFreeCells.SequenceEqual(other.orderedFreeCells);
     public override int GetHashCode() => hashCode;
