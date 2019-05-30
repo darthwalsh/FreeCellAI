@@ -4,11 +4,12 @@ using System.Linq;
 
 namespace FreeCellAI
 {
-  public class Game : ICloneable, IEquatable<Game>
+  public class Game : ICloneable, IEquatable<Game>, IComparable<Game>
   {
     readonly List<ImmutableStack<Card>> tableau;
     readonly Dictionary<Suit, int> foundations;
     readonly List<Card?> freeCells;
+    int priority; // lower priority games should be solved sooner
     List<Card?> orderedFreeCells;
     int hashCode;
 
@@ -16,9 +17,10 @@ namespace FreeCellAI
       tableau.Select(ImmutableStack<Card>.New),
       Card.AllSuits.ToDictionary(s => s, s => 0),
       Enumerable.Repeat<Card?>(null, 4).ToList(),
-      checkCounts: true) { }
+      checkCounts: true,
+      priority: 0) { }
 
-    Game(IEnumerable<ImmutableStack<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts) {
+    Game(IEnumerable<ImmutableStack<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts, int priority) {
       if (checkCounts) {
         var allCards = tableau.SelectMany(col => col)
           .Concat(freeCells.SelectMany(c => c.HasValue ? new[] { c.Value } : new Card[0]))
@@ -35,6 +37,7 @@ namespace FreeCellAI
       this.tableau = tableau.ToList();
       this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       this.freeCells = freeCells.ToList();
+      this.priority = priority;
       InitEquality();
     }
 
@@ -90,6 +93,8 @@ namespace FreeCellAI
     }
 
     internal void MoveCard(Move move) {
+      ++priority;
+
       Card card;
       switch (move.From.Kind) {
         case Kind.Tableau:
@@ -115,6 +120,7 @@ namespace FreeCellAI
           tableau[move.Onto.Index] = tableau[move.Onto.Index].Push(card);
           break;
         case Kind.Foundation:
+          --priority; // TODO making this -= 4 instead of -= 1 decreases speed from 5s to 2s, but might return nonoptimal solution
           foundations[card.Suit]++;
           break;
         case Kind.FreeCell:
@@ -188,7 +194,9 @@ namespace FreeCellAI
       }
     }
 
-    public bool Solved => Card.AllSuits.All(suit => foundations[suit] == 13);
+    public bool Solved => Card.AllSuits.Any(suit => foundations[suit] == SolveLimit); // TODO TODO TODO should be All() == 13 //TODO have .Min and .Max, then 
+
+    internal static int SolveLimit { get; set; } = 13;
 
     public override string ToString() {
       var found = Card.AllSuits.Select(s =>
@@ -205,8 +213,7 @@ namespace FreeCellAI
       return string.Join(Environment.NewLine, new[] { topRow, blank }.Concat(lines));
     }
 
-    // If cloning is a bottleneck, consider switching to immutable stack implementation to reduce copying
-    internal Game Clone() => new Game(tableau, foundations, freeCells, checkCounts: false); // Skip counts for performance
+    internal Game Clone() => new Game(tableau, foundations, freeCells, checkCounts: false, priority); // Skip counts for performance
     object ICloneable.Clone() => Clone();
     public override bool Equals(object obj) => Equals(obj as Game);
     public bool Equals(Game other) => other != null &&
@@ -214,6 +221,8 @@ namespace FreeCellAI
       foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) &&
       orderedFreeCells.SequenceEqual(other.orderedFreeCells);
     public override int GetHashCode() => hashCode;
+
+    public int CompareTo(Game other) => priority - other.priority;
   }
 
   public enum Kind : sbyte

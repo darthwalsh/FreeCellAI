@@ -214,7 +214,7 @@ JD 7D 0C 7C KD 4H 5D QC
     }
 
     [TestMethod]
-    public void SortTest() {
+    public void CardSortTest() {
       var cards = new[] { new Card("5C"), new Card("5H"), new Card("6C") };
       CollectionAssert.AreEqual(cards, cards.OrderBy(c => c).ToList());
     }
@@ -253,6 +253,34 @@ JD 7D 0C 7C KD 4H 5D QC
       Assert.AreEqual(g1.GetHashCode(), g2.GetHashCode());
     }
 
-      static void Move(ref Game game, Move move) => Assert.IsTrue(game.TryMove(move, out game));
+    [TestMethod]
+    public void GameSortTests() {
+      const string text = @"
+0H 0D 9C 7S 8H AS 6S 3S
+8D 4C 3D 2D 3C AH QH 4S
+9D 9S 8S 9H 8C KH JS 5C
+JD 7D 0C 7C KD 4H 5D QC
+4D 7H KC 5H KS 2C QS 6H
+2H 2S 3H QD 5S 6C AC AD
+6D 0S JC JH            ";
+      var original = Importer.FromString(text);
+      var good = Move(original, new Move(
+        new Position(Kind.Tableau, 6),
+        new Position(Kind.Foundation, 0)
+      ));
+      var bad = Move(original, new Move(
+        new Position(Kind.Tableau, 1),
+        new Position(Kind.Tableau, 3)
+      ));
+
+      var sorted = new[] { original, good, bad }.OrderBy(g => g).ToList();
+      Assert.AreEqual(bad, sorted.Last());
+    }
+
+    static void Move(ref Game game, Move move) => game = Move(game, move);
+    static Game Move(Game game, Move move) {
+      Assert.IsTrue(game.TryMove(move, out var next));
+      return next;
+    }
   }
 }

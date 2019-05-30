@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace FreeCellAI
@@ -9,11 +8,14 @@ namespace FreeCellAI
   {
     public static bool TrySolve(Game g, out Change solution) {
       var seen = new HashSet<Game>();
-      var toSearch = new Stack<Change>();
-      toSearch.Push(new Change {
-        Game = g,
-      });
-      while (toSearch.TryPop(out var current)) {
+      var toSearch = new C5.IntervalHeap<Change> {
+          new Change {
+            Game = g,
+          }
+      };
+      while (toSearch.Any()) {
+        var current = toSearch.FindMin();
+        toSearch.DeleteMin();
         if (!seen.Add(current.Game)) {
           continue;
         }
@@ -29,7 +31,7 @@ namespace FreeCellAI
             solution = next;
             return true;
           }
-          toSearch.Push(next);
+          toSearch.Add(next);
         }
       }
       solution = null;
@@ -37,10 +39,12 @@ namespace FreeCellAI
     }
   }
 
-  public class Change
+  public class Change : IComparable<Change>
   {
     public Change Previous { get; set; }
     public Game Game { get; set; }
     public Move Move { get; set; }
+
+    public int CompareTo(Change other) => Game.CompareTo(other.Game);
   }
 }

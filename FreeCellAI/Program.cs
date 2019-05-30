@@ -5,6 +5,10 @@ namespace FreeCellAI
   class Program
   {
     static void Main(string[] args) {
+      if (args.Length > 0) {
+        Game.SolveLimit = int.Parse(args[0]);
+      }
+
       const string text = @"
 0H 0D 9C 7S 8H AS 6S 3S
 8D 4C 3D 2D AD AH QH 4S
