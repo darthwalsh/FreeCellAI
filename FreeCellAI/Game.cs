@@ -9,8 +9,8 @@ namespace FreeCellAI
     readonly List<ImmutableStack<Card>> tableau;
     readonly Dictionary<Suit, int> foundations;
     readonly List<Card?> freeCells;
-    readonly List<Card?> orderedFreeCells;
-    readonly int hashCode;
+    List<Card?> orderedFreeCells;
+    int hashCode;
 
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
       tableau.Select(ImmutableStack<Card>.New),
@@ -35,17 +35,21 @@ namespace FreeCellAI
       this.tableau = tableau.ToList();
       this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       this.freeCells = freeCells.ToList();
-      this.orderedFreeCells = freeCells.ToList();
-      this.orderedFreeCells.Sort();
+      InitEquality();
+    }
+
+    void InitEquality() {
+      orderedFreeCells = freeCells.ToList();
+      orderedFreeCells.Sort();
 
       var hash = new HashCode();
-      foreach (var col in this.tableau) {
+      foreach (var col in tableau) {
         foreach (var card in col) {
           hash.Add(card);
         }
       }
       foreach (var suit in Card.AllSuits) {
-        hash.Add(this.foundations[suit]);
+        hash.Add(foundations[suit]);
       }
       foreach (var card in orderedFreeCells) {
         hash.Add(card);
@@ -117,6 +121,8 @@ namespace FreeCellAI
           freeCells[move.Onto.Index] = card;
           break;
       }
+
+      InitEquality();
     }
 
     public bool TryMove(Move move, out Game result) {
