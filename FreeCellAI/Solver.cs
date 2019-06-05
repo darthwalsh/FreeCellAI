@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FreeCellAI
 {
@@ -13,7 +12,7 @@ namespace FreeCellAI
             Game = g,
           }
       };
-      while (toSearch.Any()) {
+      while (toSearch.Count > 0) {
         var current = toSearch.FindMin();
         toSearch.DeleteMin();
         if (!seen.Add(current.Game)) {
