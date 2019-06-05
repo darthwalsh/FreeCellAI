@@ -6,21 +6,21 @@ namespace FreeCellAI
 {
   public class Game : ICloneable, IEquatable<Game>, IComparable<Game>
   {
-    readonly List<ImmutableStack<Card>> tableau;
-    readonly Dictionary<Suit, int> foundations;
-    readonly List<Card?> freeCells;
+    List<ImmutableStack<Card>> tableau;
+    Dictionary<Suit, int> foundations;
+    List<Card?> freeCells;
     int priority; // lower priority games should be solved sooner
     List<Card?> orderedFreeCells;
     int hashCode;
 
     public Game(IEnumerable<IEnumerable<Card>> tableau) : this(
-      tableau.Select(ImmutableStack<Card>.New),
+      tableau.Select(ImmutableStack<Card>.New).ToList(),
       Card.AllSuits.ToDictionary(s => s, s => 0),
       Enumerable.Repeat<Card?>(null, 4).ToList(),
       checkCounts: true,
       priority: 0) { }
 
-    Game(IEnumerable<ImmutableStack<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts, int priority) {
+    Game(List<ImmutableStack<Card>> tableau, Dictionary<Suit, int> foundations, List<Card?> freeCells, bool checkCounts, int priority) {
       if (checkCounts) {
         var allCards = tableau.SelectMany(col => col)
           .Concat(freeCells.SelectMany(c => c.HasValue ? new[] { c.Value } : new Card[0]))
@@ -34,14 +34,17 @@ namespace FreeCellAI
         }
       }
 
-      this.tableau = tableau.ToList();
-      this.foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-      this.freeCells = freeCells.ToList();
+      this.tableau = tableau;
+      this.foundations = foundations;
+      this.freeCells = freeCells;
       this.priority = priority;
-      InitEquality();
     }
 
     void InitEquality() {
+      if (orderedFreeCells != null) {
+        return;
+      }
+
       orderedFreeCells = freeCells.ToList();
       orderedFreeCells.Sort();
 
@@ -95,6 +98,17 @@ namespace FreeCellAI
     internal void MoveCard(Move move) {
       ++priority;
 
+      if (move.From.Kind == Kind.Tableau || move.Onto.Kind == Kind.Tableau) {
+        tableau = tableau.ToList();
+      }
+      if (move.From.Kind == Kind.Foundation || move.Onto.Kind == Kind.Foundation) {
+        foundations = foundations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+      }
+      if (move.From.Kind == Kind.FreeCell || move.Onto.Kind == Kind.FreeCell) {
+        freeCells = freeCells.ToList();
+      }
+      orderedFreeCells = null;
+
       Card card;
       switch (move.From.Kind) {
         case Kind.Tableau:
@@ -120,15 +134,13 @@ namespace FreeCellAI
           tableau[move.Onto.Index] = tableau[move.Onto.Index].Push(card);
           break;
         case Kind.Foundation:
-          --priority; // TODO making this -= 4 instead of -= 1 decreases speed from 5s to 2s, but might return nonoptimal solution
+          priority -= 4; // TODO making this -= 4 instead of -= 1 decreases speed from 5s to 2s, but might return nonoptimal solution
           foundations[card.Suit]++;
           break;
         case Kind.FreeCell:
           freeCells[move.Onto.Index] = card;
           break;
       }
-
-      InitEquality();
     }
 
     public bool TryMove(Move move, out Game result) {
@@ -216,11 +228,20 @@ namespace FreeCellAI
     internal Game Clone() => new Game(tableau, foundations, freeCells, checkCounts: false, priority); // Skip counts for performance
     object ICloneable.Clone() => Clone();
     public override bool Equals(object obj) => Equals(obj as Game);
-    public bool Equals(Game other) => other != null &&
-      tableau.Zip(other.tableau, (col, oCol) => col.SequenceEqual(oCol)).All(b => b) &&
-      foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) &&
-      orderedFreeCells.SequenceEqual(other.orderedFreeCells);
-    public override int GetHashCode() => hashCode;
+    public bool Equals(Game other) {
+      InitEquality();
+      other.InitEquality();
+
+      return other != null &&
+tableau.Zip(other.tableau, (col, oCol) => col.SequenceEqual(oCol)).All(b => b) &&
+foundations.Keys.All(suit => foundations[suit] == other.foundations[suit]) &&
+orderedFreeCells.SequenceEqual(other.orderedFreeCells);
+    }
+
+    public override int GetHashCode() {
+      InitEquality();
+      return hashCode;
+    }
 
     public int CompareTo(Game other) => priority - other.priority;
   }

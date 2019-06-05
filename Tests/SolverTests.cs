@@ -24,7 +24,7 @@ AC AD AH AS            ";
     }
 
     [TestMethod]
-    [Timeout(1000 * 3)]
+    [Timeout(1000 * 10)]
     public void SolveTest() {
       const string text = @"
 0H 0D 9C 7S 8H AS 6S 3S
