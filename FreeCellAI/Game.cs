@@ -134,7 +134,7 @@ namespace FreeCellAI
           tableau[move.Onto.Index] = tableau[move.Onto.Index].Push(card);
           break;
         case Kind.Foundation:
-          priority -= 4; // TODO making this -= 4 instead of -= 1 decreases speed from 5s to 2s, but might return nonoptimal solution
+          priority -= PriorityDelta; 
           foundations[card.Suit]++;
           break;
         case Kind.FreeCell:
@@ -142,6 +142,11 @@ namespace FreeCellAI
           break;
       }
     }
+
+    // making this anything other than -= 1 probably will return nonoptimal solution
+    // TODO determine against all games what a good average would be, for one game it is:
+    // 3: 122.6s, 4: 4.8s, 5: 2.4s, 6: 11.5s, 7: 5.4s, 8: 4.2s, 9: 4.2s, 
+    internal static int PriorityDelta = 4;
 
     public bool TryMove(Move move, out Game result) {
       var card = GetCard(move.From);
@@ -206,9 +211,7 @@ namespace FreeCellAI
       }
     }
 
-    public bool Solved => Card.AllSuits.Any(suit => foundations[suit] == SolveLimit); // TODO TODO TODO should be All() == 13 //TODO have .Min and .Max, then 
-
-    internal static int SolveLimit { get; set; } = 13;
+    public bool Solved => Card.AllSuits.All(suit => foundations[suit] == 13);
 
     public override string ToString() {
       var found = Card.AllSuits.Select(s =>
