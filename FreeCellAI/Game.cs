@@ -178,7 +178,7 @@ namespace FreeCellAI
       var lowestRed = foundations.Where(kvp => Card.IsRed(kvp.Key)).Min(kvp => kvp.Value);
       var lowestBlack = foundations.Where(kvp => !Card.IsRed(kvp.Key)).Min(kvp => kvp.Value);
 
-      var moves = GetPossibleMoves();
+      var moves = GetPossibleMoves().ToList(); // Cache here to avoid enumerating multime times
       var best = moves
         .Where(m => m.Onto.Kind == Kind.Foundation)
         .Where(m => {
