@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ImageParse;
 using Parser;
@@ -23,7 +17,7 @@ namespace GUI
     async private void ParserForm_Load(object sender, EventArgs e) {
       const int fps = 1000 / 60;
 
-      var image = new Bitmap(Path.Combine(Application.StartupPath, "game0.png"));
+      var image = new Bitmap(@"C:\Users\cwalsh\Downloads\Screenshot_20190527-235725.png"); //TODO
 
       pictureBox.Image = image;
       pictureBox.Height = Screen.PrimaryScreen.WorkingArea.Height;
@@ -40,7 +34,7 @@ namespace GUI
           KeepCount = 5000,
           IAsyncBitmap = new DelayedBitmap {
             DelayInterval = fps,
-            DelayCount = 400,
+            DelayCount = 200,
             IAsyncBitmap = new WrappingBitmap {
               Bitmap = image,
             },

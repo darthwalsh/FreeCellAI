@@ -9,7 +9,7 @@ namespace FreeCellAI
   class Program
   {
     async static Task Main(string[] args) {
-      string text = @"
+      var text = @"
 0H 0D 9C 7S 8H AS 6S 3S
 8D 4C 3D 2D AD AH QH 4S
 9D 9S 8S 9H 8C KH JS AC
